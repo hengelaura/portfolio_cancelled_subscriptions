@@ -22,17 +22,16 @@ class Subscribers:
     # in the init function, I'd like to make a connection to the database, read the tables from the database into
     # dataframes
     def __init__(self, path_to_db):
-        con = sqlite3.connect(path_to_db)
-        curs = con.cursor()
+        self.con = sqlite3.connect(path_to_db)
+        curs = self.con.cursor()
         table_names = curs.execute('''select name from sqlite_master where type='table';''').fetchall()
         dfs = []
         for t in table_names:
             query = 'select * from {};'.format(t[0])
-            dfs.append(pd.read_sql_query('''{}'''.format(query), con))
+            dfs.append(pd.read_sql_query('''{}'''.format(query), self.con))
         self.students = dfs[0]
         self.courses = dfs[1]
         self.jobs = dfs[2]
-
 
     def clean_student_table(self):
         # convert types
@@ -79,12 +78,57 @@ class Subscribers:
         final_table = pd.merge(final_table, self.jobs)
         return final_table
 
+    def close_connection(self):
+        self.con.close()
+
 
 # now it is time to incorporate the unit tests to make sure I'm not ruining anything.
 # aka: time to make some unit tests!
-class SubscribersTests(unittest.TestCase):
-    def test_data_schema(self):
-        pass
+def test_null_count(df):
+    # make sure no rows exist with null values still
+    null_count = df.isnull().count()
+
+    try:
+        assert null_count == 0, 'There are no null values in the table'
+    except AssertionError as e:
+        print(e)  # come back and make me a logging item
 
 
-Subscribers('C:\\Users\\henge\\PycharmProjects\\subscriber-pipeline-starter-kit\\dev\\cademycode.db')
+def test_duplicates(df):
+    # make sure that no rows are duplicates of each other
+    length = len(df)
+    no_dupes_length = len(df.drop_duplicates(axis=1))
+
+    try:
+        assert length == no_dupes_length, 'There are no duplicate values remaining'
+    except AssertionError as e:
+        print(e)  # come back for me!
+
+
+# should have some way to make sure that the incoming tables have the number of columns we expect and the right names?
+def test_incoming_table_number(tables):
+    # check the length of tables (should be 3 incoming tables)
+    try:
+        assert tables == 3, 'The correct number of tables are present'
+    except AssertionError as e:
+        print(e)  # come back for me also
+
+
+def test_columns(current_db, incoming_db):
+    # Need the number of columns to be equal
+    # need the types of columns to be equal
+    current_col_number = len(current_db.columns)
+    incoming_col_number = len(incoming_db.columns)
+
+    try:
+        assert current_col_number == incoming_col_number, 'Tables are same width, can continue'
+    except AssertionError as e:
+        print(e)
+
+    try:
+        assert current_db.dtypes == incoming_db.dtypes, 'All columns have the same type, can continue'
+    except AssertionError as e:
+        print(e)
+
+
+
