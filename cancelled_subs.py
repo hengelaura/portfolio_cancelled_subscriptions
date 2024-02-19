@@ -140,7 +140,7 @@ def test_columns(current_db, incoming_db):
 
 
 def main():
-    new_subscribers = Subscribers('C:\\Users\\henge\\PycharmProjects\\subscriber-pipeline-starter-kit\\subs_python\\dev\\cademycode.db')
+    new_subscribers = Subscribers('C:\\Users\\henge\\PycharmProjects\\subscriber-pipeline-starter-kit\\subs_python\\dev\\cademycode_updated.db')
     new_subscribers.clean_student_table()
     test_null_count(new_subscribers.students)
     test_duplicates(new_subscribers.students)
@@ -165,7 +165,7 @@ def main():
 
     if len(new_final_table) > 0:
         new_final_table.to_sql('cancelled_subs', current_con, if_exists='append', index=False)
-        new_final_table.to_csv("dev\\final_table_csv")
+        new_final_table.to_csv("dev\\final_table.csv")
         chg_logger.info('uploaded {} new rows of data'.format(len(new_final_table)))
     else:
         chg_logger.info('No new data to upload')

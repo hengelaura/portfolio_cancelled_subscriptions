@@ -43,8 +43,8 @@ then
       echo "No new data to upload. Process complete."
    else
       echo "New data uploaded. Updating files in prod folder."
-      $(cp -f ../dev/final_table.csv ../prod/.)
-      $(cp -f ../dev/final_table.db ../prod/.)
+      $(cp -f dev/final_table.csv prod/.)
+      $(cp -f dev/final_table.db prod/.)
    fi
 fi
 
